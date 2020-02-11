@@ -1,0 +1,145 @@
+drop database if exists clinic;
+create database clinic;
+use clinic;
+
+create table admin(
+    username varchar(32) not null,
+    ssap varchar(64) not null
+);
+
+
+
+insert into admin values('admin','3e2020725a38a48eb3bbf75767f03a22c6b3f41f459c831309b06433ec649779');
+
+create table student(
+	student_id int unsigned not null auto_increment,
+	student_firstname varchar(32) not null,
+	student_lastname varchar(32) not null,
+	student_email varchar(128) not null,
+	student_password varchar(64) not null default('3e2020725a38a48eb3bbf75767f03a22c6b3f41f459c831309b06433ec649779'),
+	primary key (student_id),
+    index(student_firstname),
+    index(student_lastname)
+);
+
+create table clinician(
+	clinician_id int unsigned not null auto_increment,
+	clinician_firstname varchar(32) not null,
+	clinician_lastname varchar(32) not null,
+	clinician_email varchar(128) not null,
+	clinician_password varchar(64) not null default('3e2020725a38a48eb3bbf75767f03a22c6b3f41f459c831309b06433ec649779'),
+	primary key (clinician_id),
+    index(clinician_firstname),
+    index(clinician_lastname)
+);
+
+create table doctor(
+	doctor_id int unsigned not null auto_increment,
+	doctor_firstname varchar(32) not null,
+	doctor_lastname varchar(32) not null,
+	doctor_department enum('Cardiology','Gastroenterology','Gynecology','Haematology','Nephrology','Neurology','Oncology','Orthopaedics','Otolaryngology','Physiotherapy','Urology') not null,
+	doctor_email varchar(128) not null,
+	doctor_password varchar(64) not null default('3e2020725a38a48eb3bbf75767f03a22c6b3f41f459c831309b06433ec649779'),
+	primary key(doctor_id),
+    index(doctor_firstname),
+    index(doctor_lastname)
+);
+
+create table appointment(
+	appointment_id int unsigned not null auto_increment,
+	student_id int unsigned not null,
+	doctor_id int unsigned not null,
+	appointment_date date not null,
+	appointment_time time not null,
+    appointment_pres_refill enum('Yes','No') not null,
+	appointment_status enum('Approved','Pending'),
+	primary key(appointment_id),
+	foreign key(student_id) references student(student_id),
+	foreign key(doctor_id) references doctor(doctor_id)
+);
+
+create table queue(
+	queue_code int unsigned not null auto_increment,
+	queue_for_doctor int unsigned not null,
+	queue_created_on date not null default(curdate()),
+	primary key(queue_code),
+	foreign key(queue_for_doctor) references doctor(doctor_id)
+);
+
+
+create table queue_content(
+	queue_code int unsigned not null,
+	student_id int unsigned not null,
+    entered_queue_at time not null default(curtime()),
+	foreign key(queue_code) references queue(queue_code),
+	foreign key(student_id) references student(student_id)
+);
+
+create table questionnaire(
+	questionnaire_id int unsigned not null auto_increment,
+	questionnaire_doctor int unsigned not null,
+	foreign key(questionnaire_doctor) references doctor(doctor_id),
+	primary key(questionnaire_id)
+);
+
+
+create table questionnaire_question(
+	questionnaire_question_id int unsigned not null auto_increment,
+	questionnaire_id int unsigned not null,
+	questionnaire_question varchar(512) not null,
+	foreign key(questionnaire_id) references questionnaire(questionnaire_id),
+	primary key(questionnaire_question_id)
+);
+
+create table questionnaire_options(
+	questionnaire_option_id int unsigned not null auto_increment,
+	questionnaire_question_id int unsigned not null,
+	questionnaire_option varchar(128) not null,
+	foreign key(questionnaire_question_id) references questionnaire_question(questionnaire_question_id),
+    primary key(questionnaire_option_id)
+);
+
+create table questionnaire_submissions(
+	questionnaire_question_id int unsigned not null,
+	student_id int unsigned not null,
+	questionnaire_option_id int unsigned not null,
+	foreign key(questionnaire_question_id) references questionnaire_question(questionnaire_question_id),
+	foreign key(questionnaire_option_id) references questionnaire_options(questionnaire_option_id),
+	foreign key(student_id) references student(student_id)
+	
+);
+create table reminder(
+	reminder_id int unsigned not null auto_increment,
+	reminder_for_student int unsigned not null,
+	reminder_date date not null,
+	primary key(reminder_id),
+	foreign key(reminder_for_student) references student(student_id)
+);
+
+create table student_notification(
+	student_id int unsigned not null,
+    notification_data varchar(512) not null,
+    foreign key(student_id) references student(student_id)
+);
+
+create table message_inbox_doctor(
+	doctor_id int unsigned not null,
+	student_id int unsigned not null,
+	message varchar(512) not null,
+	message_timestamp datetime not null default(now()),
+	foreign key(doctor_id) references doctor(doctor_id),
+	foreign key(student_id) references student(student_id)
+	
+);
+
+create table message_inbox_student(
+	doctor_id int unsigned not null,
+	student_id int unsigned not null,
+	message varchar(512) not null,
+	message_timestamp datetime not null default(now()),
+	foreign key(doctor_id) references doctor(doctor_id),
+	foreign key(student_id) references student(student_id)
+	
+);
+
+

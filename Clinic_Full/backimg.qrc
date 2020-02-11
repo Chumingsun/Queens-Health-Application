@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Admin.ico</file>
+        <file>doctor.ico</file>
+        <file>patient.png</file>
+        <file>staff.png</file>
+    </qresource>
+</RCC>
